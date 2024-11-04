@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Falsificación de Solicitudes del Lado del Servidor (SSRF)</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f8ff; /* Color de fondo modificado */
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            transition: color 0.3s ease, transform 0.3s ease; /* Transición para efecto interactivo */
+        }
+        h1:hover {
+            color: #ff6600; /* Cambia el color del título al pasar el mouse */
+            transform: scale(1.05); /* Aumenta ligeramente el tamaño del título al pasar el mouse */
+        }
+
+        /* Estilos para los acordeones */
+        .accordion {
+            background-color: #007bff; /* Color de fondo del acordeón modificado */
+            color: #fff;
+            cursor: pointer;
+            padding: 15px;
+            margin-top: 10px;
+            border: none;
+            outline: none;
+            width: 100%;
+            text-align: center; /* Centrando los títulos de los acordeones */
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+        }
+        .accordion:hover {
+            background-color: #0056b3; /* Cambia el color del acordeón al pasar el mouse */
+        }
+
+        .accordion.active {
+            background-color: #004080; /* Fondo de acordeón cuando está activo */
+        }
+
+        /* Contenido dentro del acordeón */
+        .panel {
+            padding: 0 15px;
+            display: none;
+            background-color: #ffffff;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            margin-top: -1px;
+            border-radius: 0 0 5px 5px;
+        }
+
+        /* Estilos para los enlaces */
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Estilos para listas */
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Server-Side Request Forgery, SSRF</h1>
+
+    <!-- Acordeón para la introducción -->
+    <button class="accordion">¿En qué consiste la falsificación de solicitudes del lado del servidor (Server-Side Request Forgery, SSRF)?</button>
+    <div class="panel">
+        <p>
+            Es una vulnerabilidad que permite a uno o varios atacantes inyectar diferentes solicitudes a los servidores internos por medio de una aplicación web vulnerable, el atacante lo que busca es enviar una solicitud a un servidor externo; sin embargo, este puede redirigir la solicitud a un servidor interno, esta acción le permitirá al atacante acceder a recursos internos o realizar tareas que no están autorizadas, este error ocurre cuando la aplicación o sitio web no válida adecuadamente la URL de destino que proporciona el usuario.
+        </p>
+    </div>
+
+    <!-- Acordeón para Vectores de Ataque -->
+    <button class="accordion">Vectores de Ataque</button>
+    <div class="panel">
+        <h3>Acceso a Recursos Internos</h3>
+        <p>
+            Los atacantes pueden manipular el servidor para que realice solicitudes a recursos internos que, en condiciones normales, no deberían ser accesibles desde el exterior. Esto incluye: bases de datos internas; servicios de administración; o APIs internas, exponiendo así información sensible o permitiendo acciones no autorizadas dentro de la red interna. Esta vulnerabilidad permite a los atacantes interactuar con sistemas críticos (que deberían estar protegidos del acceso externo), lo cual podría resultar en graves compromisos de seguridad.
+        </p>
+
+        <h3>Bypass de Restricciones de Red</h3>
+        <p>
+            Algunos servidores implementan restricciones para impedir solicitudes a ciertas direcciones IP o recursos de red locales. Sin embargo, los atacantes pueden sortear estas limitaciones empleando técnicas como la codificación de direcciones IP o el uso de nombres de dominio que se resuelvan en direcciones internas. Esto les permite acceder a recursos protegidos, evadiendo los mecanismos de control y exponiendo potencialmente la red a amenazas de seguridad.
+        </p>
+
+        <h3>Explotación de Servicios de Metadatos en la Nube</h3>
+        <p>
+            En infraestructuras de nube, los atacantes pueden aprovechar vulnerabilidades SSRF para acceder a servicios de metadatos; de esta manera, obtienen credenciales temporales, claves API u otra información sensible que puede comprometer la seguridad de toda la infraestructura. Este acceso no autorizado permite a los atacantes manipular o acceder a recursos críticos (como cuentas o datos confidenciales), poniendo en riesgo tanto la integridad como la disponibilidad de los sistemas en la nube.
+        </p>
+
+        <h3>Escaneo de Puertos Internos</h3>
+        <p>
+            Los atacantes pueden utilizar vulnerabilidades SSRF para realizar un escaneo de puertos internos; esto les permite identificar otros servicios vulnerables dentro de la red interna del servidor. A través de este método, pueden mapear la infraestructura de la red, descubriendo posibles puntos de entrada adicionales y facilitando así un acceso más profundo a los sistemas internos, lo cual representa un riesgo considerable para la seguridad de la organización.
+        </p>
+    </div>
+
+    <!-- Acordeón para Características -->
+    <button class="accordion">Características</button>
+    <div class="panel">
+        <ul>
+            <li><strong>Ocultación:</strong> Los ataques SSRF son difíciles de detectar, ya que estos tienden aprovechar la lógica existente de la aplicación.</li>
+            <li><strong>Manipulación de solicitudes:</strong> El atacante puede llegar a controlar la URL o el destino de una solicitud enviada desde el servidor, el se puede encargar de redirigir hacia otros servicios de la misma red o hacia puntos externos.</li>
+            <li><strong>Acceso a redes internas:</strong> El servidor puede acceder a redes internas o protegidas, el atacante las podría usar como un puente para obtener información de sistemas que se encuentran aislados del acceso externo.</li>
+            <li><strong>Exploración de puertos y servicios internos:</strong> Al momento de ejecutar el ataque se pueden visualizar puertos internos donde se pueden identificar los servicios en ejecución en la red interna, lo que le puede relevar al atacante detalles críticos de la red.</li>
+        </ul>
+    </div>
+
+    <!-- Acordeón para Escenarios Comunes de Ataques SSRF -->
+    <button class="accordion">Escenarios comunes de ataques SSRF:</button>
+    <div class="panel">
+        <ul>
+            <li><strong>Extracción de metadatos en entornos en la nube:</strong> En plataformas de nube como AWS, GCP o Azure, los metadatos de configuración del servidor están disponibles a través de endpoints internos especiales (ej., http://169.254.169.254 en AWS). Un atacante puede usar SSRF para acceder a estos endpoints y extraer información sensible, como claves de acceso, configuraciones de red o credenciales temporales de la cuenta.</li>
+            <li><strong>Escaneo de puertos en la red interna:</strong> Usando SSRF, el atacante puede enviar solicitudes a una variedad de direcciones y puertos en la red interna, lo que le permite mapear los servicios que se ejecutan internamente. Por ejemplo, podría encontrar bases de datos, servidores de correo, servicios API internos expuestos a la red, que luego podrían explotarse para acceder a más información.</li>
+            <li><strong>Fuga de información:</strong> Pueden extraer información confidencial como credenciales o datos sensibles.</li>
+            <li><strong>Denegación de servicios:</strong> El atacante al realizar la ejecución de la SSRF puede encargarse de sobrecargar un servidor interno y la consecuencia de esto es que se pueda presentar una interrupción del servicio.</li>
+        </ul>
+    </div>
+
+    <!-- Acordeón para Controles Proactivos -->
+    <button class="accordion">Controles proactivos</button>
+    <div class="panel">
+        <ul>
+            <li><strong>Validar URLs:</strong> El usuario puede implementar listas blancas para prevenir estos ataques (whitelisting) que solo permitan direcciones URL que sean confiables y específicas de ciertos sitios web, esto evita que el servidor acceda a URLs no adecuadas que sean proporcionadas por los diferentes usuarios.</li>
+            <li><strong>Rechazo direcciones IP internas:</strong> Bloquear las direcciones IP de rango privado y de loopback (127.0.0.1, 10.x.x.x, 172.16.x.x - 172.31.x.x, 192.168.x.x) para que no puedan ser utilizadas en las solicitudes.</li>
+            <li><strong>Limitaciones de acceso con el servidor:</strong> Se debe restringir el acceso del servidor a las redes internas y servicios innecesarios, el usuario debe procurar configurar reglas de firewall que solo le permita el acceso a direcciones específicas y servicios necesarios para su buen funcionamiento.</li>
+            <li><strong>Bloqueo de puertos:</strong> Configurar firewalls y reglas de seguridad para bloquear el acceso a puertos internos o puertos sensibles, como los que corresponden a bases de datos y servicios de administración.</li>
+            <li><strong>Seguridad en el DNS:</strong> Si el usuario usa un servidor DNS, se debe configurar las diferentes políticas de seguridad que bloqueen solicitudes hacia dominios internos o externos, sospechosos.</li>
+            <li><strong>Filtrar tráfico malicioso:</strong> Los WAF pueden detectar patrones de ataque SSRF y bloquearlos antes de que lleguen al servidor. Configurar el WAF para inspeccionar y analizar las solicitudes entrantes y bloquea aquellas que coincidan con patrones de URL peligrosos.</li>
+            <li><strong>Establecer límites de tiempo y tamaño:</strong> Configurar límites de tiempo (timeouts) y de tamaño de respuesta para todas las solicitudes del servidor puede prevenir que el servidor se bloquee o responda a solicitudes que no cumplen con los parámetros de seguridad.</li>
+            <li><strong>Restricciones de protocolos:</strong> Limitar los protocolos permitidos (HTTP, HTTPS) y los métodos HTTP (GET, POST, etc.).</li>
+        </ul>
+    </div>
+
+    <!-- Acordeón para Contramedidas contra SSRF -->
+    <button class="accordion">¿Cómo se contrarrestan los ataques de SSRF?</button>
+    <div class="panel">
+        <ul>
+            <li><strong>Whitelist:</strong> Solo se deben permitir URLs específicas y que sean confiables para las solicitudes realizadas desde un servidor, eso se encarga de limitar las solicitudes a destinos aprobados.</li>
+            <li><strong>Detección:</strong> Utilizar herramientas de escaneo de vulnerabilidades y sistemas de detección de intrusiones (IDS) para identificar posibles ataques.</li>
+            <li><strong>Entornos aislados:</strong> El usuario puede usar contenedores o sistemas virtualizados que estos a su vez se encargan de limitar los solicitados, prácticamente el servidor no se podrá comunicar con los servicios internos del usuario o la organización.</li>
+            <li><strong>Proxy controlado:</strong> El usuario podrá configurar un proxy de salida seguro que filtre todas las solicitudes externas. Este proxy puede bloquear dominios internos o no confiables, protegiendo así los recursos internos.</li>
+            <li><strong>Alertas para solicitudes internas inusuales:</strong> Establecer alertas para solicitudes inusuales que se dirijan a IPs privadas, servicios internos o puertos no habituales.</li>
+            <li><strong>Roles de acceso mínimos:</strong> El usuario podrá configurar roles de acceso con el mínimo de permisos necesario (principio de menor privilegio) esto se encargará de reducir los riesgos en caso de que se intente acceder a servicios internos.</li>
+        </ul>
+    </div>
+
+    <!-- Acordeón para Referencias -->
+    <button class="accordion">Referencias</button>
+    <div class="panel">
+        <ul>
+            <li><a href="https://blog.hackmetrix.com/ssrf-server-side-request-forgery/" target="_blank">Hackmetrix - SSRF</a></li>
+            <li><a href="https://portswigger.net/web-security/ssrf" target="_blank">PortSwigger - Web Security</a></li>
+            <li><a href="https://owasp.org/www-community/attacks/Server_Side_Request_Forgery" target="_blank">OWASP - SSRF</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Server-side_request_forgery" target="_blank">Wikipedia - SSRF</a></li>
+            <li><a href="https://www.invicti.com/blog/web-security/server-side-request-forgery-vulnerability-ssrf/" target="_blank">Invicti - Web Security</a></li>
+            <li><a href="https://owasp.org/API-Security/editions/2023/en/0xa7-server-side-request-forgery/" target="_blank">OWASP API Security</a></li>
+        </ul>
+    </div>
+
+    <!-- JavaScript para hacer que los acordeones sean interactivos -->
+    <script>
+        document.querySelectorAll('.accordion').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const panel = this.nextElementSibling;
+                if (panel.style.display === 'block') {
+                    panel.style.display = 'none';
+                } else {
+                    panel.style.display = 'block';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
